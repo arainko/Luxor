@@ -12,6 +12,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-classic:1.2.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-core:1.2.3:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor-typed_2.13:2.6.6:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor_2.13:2.6.6:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-slf4j_2.13:2.6.6:jar" level="project" />
