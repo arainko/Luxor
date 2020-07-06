@@ -2,7 +2,7 @@ package rainko.luxor.actors
 
 import java.awt.image.BufferedImage
 
-import akka.actor.Actor
+import akka.actor.{Actor, PoisonPill}
 
 case class BrightnessCalculationRequest(image: BufferedImage, rowNumber: Int)
 
@@ -14,19 +14,19 @@ class ImageProcessor extends Actor {
 
   override def receive: Receive = {
     case BrightnessCalculationRequest(image, rowNumber) =>
-//      println("HERE")
       val pixels: Seq[(Red, Green, Blue)] = pixelRow(image, rowNumber)
       val summedBrightnessValues = pixels.foldLeft(0.0) { (acc, curr) =>
         val (red, green, blue) = curr
-        acc + (red + green + blue) / 3
+        acc + (red * 0.21) + (green * 0.72) + (blue * 0.07)
       }
       val brightness: Brightness = summedBrightnessValues / pixels.size
       context.parent ! BrightnessResponse(brightness)
+      self ! PoisonPill
   }
 
   private def pixelRow(image: BufferedImage, rowNumber: Int): Seq[(Red, Green, Blue)] = {
     for {
-      pixelColumn <- 0 until image.getWidth // potential off by 1
+      pixelColumn <- 0 until image.getWidth
     } yield {
 //      println(s"Width: $width, current pixel: $pixelColumn")
       val color = image.getRGB(pixelColumn, rowNumber)

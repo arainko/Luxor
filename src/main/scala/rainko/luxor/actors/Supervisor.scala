@@ -38,46 +38,4 @@ object Main extends App {
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
 
   supervisor ! InputFolderPath("/home/aleksander/IdeaProjects/Luxor/src/main/resources/in")
-
-//type DirectoryPath = String
-//type ImagePath = String
-//  type Red = Int
-//  type Green = Int
-//  type Blue = Int
-//  type Brightness = Int
-//
-//private def absoluteImagePaths(path: DirectoryPath): Seq[ImagePath] = {
-//  val inputDirectory: File = new File(path)
-//  inputDirectory.list
-//    .map { imageFilename => s"$path/$imageFilename" }
-//}
-//
-//  private def loadImage(path: String): BufferedImage = ImageIO.read(new File(path))
-//
-//  private def pixelRow(image: BufferedImage, rowNumber: Int): Unit = {
-//    val width = image.getWidth
-//    var counter = 0
-//
-//    while (counter <= image.getHeight()) {
-//
-//      for {
-//        pixelColumn <- 0 until image.getWidth // potential off by 1
-//      } yield {
-//        //      println(s"Width: $width, current pixel: $pixelColumn")
-//        val color = image.getRGB(pixelColumn, rowNumber)
-//        val red = (color << 8) >>> 24
-//        val green = (color << 16) >>> 24
-//        val blue = (color << 24) >>> 24
-//        (red, green, blue)
-//      }
-//      counter += 1
-//      println(counter)
-//    }
-//  }
-//
-//  val images = absoluteImagePaths("/home/aleksander/IdeaProjects/Luxor/src/main/resources/in")
-//    .map { loadImage }
-//
-//  images.foreach { pixelRow(_, 10) }
-
 }
