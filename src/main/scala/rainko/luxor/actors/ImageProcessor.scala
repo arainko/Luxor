@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage
 import akka.actor.{Actor, PoisonPill}
 
 case class BrightnessCalculationRequest(image: BufferedImage, rowNumber: Int)
+case class BrightnessResponse(brightness: Double)
 
 class ImageProcessor extends Actor {
   type Red = Int
@@ -25,10 +26,7 @@ class ImageProcessor extends Actor {
   }
 
   private def pixelRow(image: BufferedImage, rowNumber: Int): Seq[(Red, Green, Blue)] = {
-    for {
-      pixelColumn <- 0 until image.getWidth
-    } yield {
-//      println(s"Width: $width, current pixel: $pixelColumn")
+    for (pixelColumn <- 0 until image.getWidth) yield {
       val color = image.getRGB(pixelColumn, rowNumber)
       val red = (color << 8) >>> 24
       val green = (color << 16) >>> 24
