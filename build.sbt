@@ -8,3 +8,4 @@ scalacOptions += "-deprecation"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.6.6"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.0"

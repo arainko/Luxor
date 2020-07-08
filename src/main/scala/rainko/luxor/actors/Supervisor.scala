@@ -5,6 +5,10 @@ import java.io.File
 
 import akka.actor.{Actor, ActorSystem, Props}
 import javax.imageio.ImageIO
+import play.api.libs.json.Json
+import rainko.luxor.Config
+
+import scala.io.Source
 
 case class InputFolderPath(path: String)
 
@@ -15,7 +19,7 @@ class Supervisor extends Actor {
   override def receive: Receive = {
     case InputFolderPath(path) =>
       val imagePaths = absoluteImagePaths(path)
-      val imageLoaders = for (id <- 0 to imagePaths.size) yield {
+      val imageLoaders = for (id <- imagePaths.indices) yield {
         context.actorOf(Props[ImageLoader](), s"loader$id")
       }
       imageLoaders.zip(imagePaths).foreach { loaderToImagePathPair =>
@@ -34,9 +38,9 @@ class Supervisor extends Actor {
 }
 
 object Main extends App {
+//  println(Config.inputFolderPath)
+//  println(Config.outputFolderPath)
   val system = ActorSystem("luxor")
-
   val supervisor = system.actorOf(Props[Supervisor](), "supervisor")
-
-  supervisor ! InputFolderPath("/home/aleksander/IdeaProjects/Luxor/src/main/resources/in")
+  supervisor ! InputFolderPath(Config.inputFolderPath)
 }

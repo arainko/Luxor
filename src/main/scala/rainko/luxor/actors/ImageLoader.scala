@@ -1,11 +1,9 @@
 package rainko.luxor.actors
 
-import java.awt.image.BufferedImage
-import java.io.File
-
-import akka.actor.{Actor, ActorRef, PoisonPill, Props, Stash}
-import javax.imageio.ImageIO
+import akka.actor.{Actor, ActorRef, PoisonPill, Props, Stash, Status}
 import rainko.luxor.wrappers.Image
+
+import scala.util.{Failure, Success, Try}
 
 //TODO: Add config files
 //TODO: Add comments
@@ -26,7 +24,7 @@ class ImageLoader extends Actor with Stash {
         val (imageProcessor, pixelRowIndex) = imageProcessorToPixelRowIndex
         imageProcessor ! BrightnessCalculationRequest(image, pixelRowIndex)
       }
-      context.become(acceptingResponses(IndexedSeq.empty, imageProcessors.size, path, image))
+      context.become(acceptingResponses(IndexedSeq.empty, image.height-1, path, image))
       unstashAll()
 
     case _ => stash()
@@ -39,11 +37,10 @@ class ImageLoader extends Actor with Stash {
     image: Image
   ): Receive = {
     case BrightnessResponse(brightness) =>
-      if (responses.size < expectedNumberOfResponses-1) {
+      if (responses.size < expectedNumberOfResponses) {
         context.become(acceptingResponses(responses :+ brightness, expectedNumberOfResponses, imagePath, image))
       } else {
         val avgBrightness = responses.sum / expectedNumberOfResponses
-        println(s"${imagePath.split("/").last}: ${(avgBrightness / 2.55).round}")
         context.become(attachMetadataAndOutput(image, imagePath, avgBrightness))
         unstashAll()
       }
@@ -69,7 +66,10 @@ class ImageLoader extends Actor with Stash {
       val normalizedBrightness = (averageBrightness / 2.55).round
       val brightnessClassification = if (normalizedBrightness <= 25) "dark" else "bright"
       val imageFilenameWithMetadata = s"${imageFilename}_${brightnessClassification}_$normalizedBrightness"
-      image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat)
-      self ! PoisonPill
+
+      Try { image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat) } match {
+        case Success(_) => /* context.parent ! Status.Success()*/
+        case Failure(exception) =>/* context.parent ! Status.Failure(exception)*/
+      }
   }
 }

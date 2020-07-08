@@ -1,9 +1,7 @@
 package rainko.luxor.wrappers
 
-import java.awt.Rectangle
 import java.awt.image._
 import java.io.File
-import java.util
 
 import javax.imageio.ImageIO
 
