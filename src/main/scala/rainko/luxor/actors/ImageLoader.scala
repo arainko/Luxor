@@ -5,6 +5,7 @@ import java.io.File
 
 import akka.actor.{Actor, ActorRef, PoisonPill, Props, Stash}
 import javax.imageio.ImageIO
+import rainko.luxor.wrappers.Image
 
 //TODO: Add config files
 //TODO: Add comments
@@ -16,8 +17,8 @@ case class OutputFolderPath(path: String)
 class ImageLoader extends Actor with Stash {
   override def receive: Receive = {
     case AbsoluteImagePath(path) =>
-      val image = loadImage(path)
-      val imageProcessors: Seq[(ActorRef, Int)] = for (pixelRowIndex <- 0 until image.getHeight) yield {
+      val image = Image(path)
+      val imageProcessors: Seq[(ActorRef, Int)] = for (pixelRowIndex <- 0 until image.height) yield {
         val imageProcessor = context.actorOf(Props[ImageProcessor](), s"processor$pixelRowIndex")
         (imageProcessor, pixelRowIndex)
       }
@@ -34,16 +35,16 @@ class ImageLoader extends Actor with Stash {
   def acceptingResponses(
     responses: IndexedSeq[Double],
     expectedNumberOfResponses: Int,
-    imageFilename: String,
-    image: BufferedImage
+    imagePath: String,
+    image: Image
   ): Receive = {
     case BrightnessResponse(brightness) =>
-      if (responses.size < expectedNumberOfResponses) {
-        context.become(acceptingResponses(responses :+ brightness, expectedNumberOfResponses, imageFilename, image))
+      if (responses.size < expectedNumberOfResponses-1) {
+        context.become(acceptingResponses(responses :+ brightness, expectedNumberOfResponses, imagePath, image))
       } else {
         val avgBrightness = responses.sum / expectedNumberOfResponses
-        println(s"${imageFilename.split("/").last}: ${(avgBrightness / 2.55).round}")
-        context.become(attachMetadataAndOutput(image, imageFilename, avgBrightness))
+        println(s"${imagePath.split("/").last}: ${(avgBrightness / 2.55).round}")
+        context.become(attachMetadataAndOutput(image, imagePath, avgBrightness))
         unstashAll()
       }
 
@@ -51,15 +52,24 @@ class ImageLoader extends Actor with Stash {
   }
 
   def attachMetadataAndOutput(
-    image: BufferedImage,
-    imageFilename: String,
+    image: Image,
+    imagePath: String,
     averageBrightness: Double
   ): Receive = {
-    ???
+    case OutputFolderPath(outputPath) =>
+      val imageFilenameWithFormat = imagePath
+        .split('/')
+        .last
+      val imageFormat = imageFilenameWithFormat
+        .split('.')
+        .last
+      val imageFilename = imageFilenameWithFormat
+        .split('.')
+        .head
+      val normalizedBrightness = (averageBrightness / 2.55).round
+      val brightnessClassification = if (normalizedBrightness <= 25) "dark" else "bright"
+      val imageFilenameWithMetadata = s"${imageFilename}_${brightnessClassification}_$normalizedBrightness"
+      image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat)
+      self ! PoisonPill
   }
-
-  private def loadImage(path: String): BufferedImage = ImageIO.read(new File(path))
-
-
-
 }

@@ -9,7 +9,6 @@ import javax.imageio.ImageIO
 case class InputFolderPath(path: String)
 
 class Supervisor extends Actor {
-
   type DirectoryPath = String
   type ImagePath = String
 
@@ -22,6 +21,7 @@ class Supervisor extends Actor {
       imageLoaders.zip(imagePaths).foreach { loaderToImagePathPair =>
           val (loader, imagePath) = loaderToImagePathPair
           loader ! AbsoluteImagePath(imagePath)
+          loader ! OutputFolderPath("/home/aleksander/IdeaProjects/Luxor/src/main/resources/out")
         }
   }
 
