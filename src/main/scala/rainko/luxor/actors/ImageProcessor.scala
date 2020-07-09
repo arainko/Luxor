@@ -16,6 +16,6 @@ class ImageProcessor extends Actor {
       }
       val rowBrightnessAverage = pixelRowBrightness.sum / image.width
       context.parent ! BrightnessResponse(rowBrightnessAverage)
-      self ! PoisonPill
+      context.stop(self)
   }
 }

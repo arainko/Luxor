@@ -65,11 +65,12 @@ class ImageLoader extends Actor with Stash {
         .head
       val normalizedBrightness = (averageBrightness / 2.55).round
       val brightnessClassification = if (normalizedBrightness <= 25) "dark" else "bright"
-      val imageFilenameWithMetadata = s"${imageFilename}_${brightnessClassification}_$normalizedBrightness"
-
+      val normalizedDarkness = (normalizedBrightness - 100) * -1
+      val imageFilenameWithMetadata = s"${imageFilename}_${brightnessClassification}_$normalizedDarkness"
       Try { image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat) } match {
-        case Success(_) => /* context.parent ! Status.Success()*/
-        case Failure(exception) =>/* context.parent ! Status.Failure(exception)*/
+        case Success(_) =>  context.parent ! Status.Success()
+        case Failure(exception) => context.parent ! Status.Failure(exception)
       }
+      context.stop(self)
   }
 }
