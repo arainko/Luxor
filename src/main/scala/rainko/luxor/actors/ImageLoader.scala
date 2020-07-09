@@ -1,13 +1,11 @@
 package rainko.luxor.actors
 
-import akka.actor.{Actor, ActorRef, PoisonPill, Props, Stash, Status}
+import akka.actor.{Actor, ActorRef, Props, Stash, Status}
 import rainko.luxor.wrappers.Image
 
 import scala.util.{Failure, Success, Try}
 
-//TODO: Add config files
 //TODO: Add comments
-//TODO: Add
 
 case class AbsoluteImagePath(path: String)
 case class OutputFolderPath(path: String)
