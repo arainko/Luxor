@@ -4,16 +4,13 @@ import java.awt.image._
 import java.io.File
 
 import javax.imageio.ImageIO
+import rainko.luxor.{Blue, Brightness, Green, ImagePath, Red}
 
 /**
  * Immutable wrapper class for java.awt.image.BufferedImage.
  * @param bufferedImage BufferedImage instance that this class wraps over.
  */
 class Image(private val bufferedImage: BufferedImage) {
-  type Red = Int
-  type Green = Int
-  type Blue = Int
-  type Brightness = Double
 
   /**
    * Scala-esque 'getter' for image width.
@@ -48,11 +45,11 @@ class Image(private val bufferedImage: BufferedImage) {
    * by 8 for red (the leftmost one), by 16 for green (the middle one) and by 24 for blue (the rightmost one).
    *
    * It then shifts the bits to the right and zeroes the leftmost bits
-   * to get accurate (in 0 to 255 range inclusively) reading for each color.
+   * to get accurate (in 0 to 255 range inclusively) reading forString each color.
    *
    * @param x pixel coordinate on the X axis
    * @param y pixel coordinate on the Y axis
-   * @return a tuple of 3 integers in 0-255 range containing
+   * @return a tuple of 3 integers in 0-255 range, each containing
    *         color representations of respectively red, green and blue colors.
    */
   def rgbAt(x: Int, y: Int): (Red, Green, Blue) = {
@@ -85,9 +82,9 @@ object Image {
   /**
    * Convenience constructor for rainko.luxor.wrappers.Image.
    * @param imagePath absolute path of the image to be loaded.
-   * @return wrapped and immutable BufferedImage thru rainko.luxor.wrappers.Image
+   * @return wrapped and immutable BufferedImage (rainko.luxor.wrappers.Image(
    */
-  def apply(imagePath: String): Image = {
+  def apply(imagePath: ImagePath): Image = {
     val image = ImageIO.read(new File(imagePath))
     new Image(image)
   }

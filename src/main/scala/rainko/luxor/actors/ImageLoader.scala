@@ -2,20 +2,25 @@ package rainko.luxor.actors
 
 import akka.actor.{Actor, ActorRef, Props, Stash, Status}
 import rainko.luxor.wrappers.Image
+import rainko.luxor.{Brightness, DirectoryPath, ImagePath}
 
 import scala.util.{Failure, Success, Try}
 
-//TODO: Add comments
+case class AbsoluteImagePath(path: ImagePath)
+case class OutputFolderPath(path: DirectoryPath)
 
-case class AbsoluteImagePath(path: String)
-case class OutputFolderPath(path: String)
-
+/**
+ * ImageLoader is responsible for loading in the image using the path it was sent
+ * and then dispatching enough ImageProcessors to compute average brightness of all
+ * pixel rows to then calculate the image brightness and copy it to the output directory
+ * with metadata.
+ */
 class ImageLoader extends Actor with Stash {
   override def receive: Receive = {
     case AbsoluteImagePath(path) =>
-      val image = Image(path)
+      val image: Image = Image(path)
       val imageProcessors: Seq[(ActorRef, Int)] = for (pixelRowIndex <- 0 until image.height) yield {
-        val imageProcessor = context.actorOf(Props[ImageProcessor](), s"processor$pixelRowIndex")
+        val imageProcessor: ActorRef = context.actorOf(Props[ImageProcessor](), s"processor$pixelRowIndex")
         (imageProcessor, pixelRowIndex)
       }
       imageProcessors.foreach { imageProcessorToPixelRowIndex =>
@@ -29,9 +34,9 @@ class ImageLoader extends Actor with Stash {
   }
 
   def acceptingResponses(
-    responses: IndexedSeq[Double],
+    responses: IndexedSeq[Brightness],
     expectedNumberOfResponses: Int,
-    imagePath: String,
+    imagePath: ImagePath,
     image: Image
   ): Receive = {
     case BrightnessResponse(brightness) =>
@@ -48,8 +53,8 @@ class ImageLoader extends Actor with Stash {
 
   def attachMetadataAndOutput(
     image: Image,
-    imagePath: String,
-    averageBrightness: Double
+    imagePath: ImagePath,
+    averageBrightness: Brightness
   ): Receive = {
     case OutputFolderPath(outputPath) =>
       val imageFilenameWithFormat = imagePath
@@ -61,10 +66,10 @@ class ImageLoader extends Actor with Stash {
       val imageFilename = imageFilenameWithFormat
         .split('.')
         .head
-      val normalizedBrightness = (averageBrightness / 2.55).round
-      val brightnessClassification = if (normalizedBrightness <= 25) "dark" else "bright"
-      val normalizedDarkness = (normalizedBrightness - 100) * -1
-      val imageFilenameWithMetadata = s"${imageFilename}_${brightnessClassification}_$normalizedDarkness"
+      val normalizedBrightness: Long = (averageBrightness / 2.55).round
+      val brightnessClassification: String = if (normalizedBrightness <= 25) "dark" else "bright"
+      val normalizedDarkness: Long = (normalizedBrightness - 100) * -1
+      val imageFilenameWithMetadata: String = s"${imageFilename}_${brightnessClassification}_$normalizedDarkness"
       Try { image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat) } match {
         case Success(_) =>  context.parent ! Status.Success()
         case Failure(exception) => context.parent ! Status.Failure(exception)

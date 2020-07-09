@@ -1,4 +1,4 @@
-package rainko.luxor
+package rainko.luxor.config
 
 import play.api.libs.json.{JsValue, Json}
 

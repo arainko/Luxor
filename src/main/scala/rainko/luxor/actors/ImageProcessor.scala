@@ -1,13 +1,13 @@
 package rainko.luxor.actors
 
 import akka.actor.{Actor, PoisonPill}
+import rainko.luxor.Brightness
 import rainko.luxor.wrappers.Image
 
 case class BrightnessCalculationRequest(image: Image, pixelRowIndex: Int)
-case class BrightnessResponse(brightness: Double)
+case class BrightnessResponse(brightness: Brightness)
 
 class ImageProcessor extends Actor {
-  type Brightness = Double
 
   override def receive: Receive = {
     case BrightnessCalculationRequest(image, rowIndex) =>
