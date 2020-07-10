@@ -7,7 +7,7 @@ import rainko.luxor.{Brightness, DirectoryPath, ImagePath}
 import scala.util.{Failure, Success, Try}
 
 case class AbsoluteImagePath(path: ImagePath)
-case class OutputFolderPath(path: DirectoryPath)
+case class OutputDirectoryPath(path: DirectoryPath)
 
 /**
  * ImageLoader is responsible for loading in the image using the path it was sent
@@ -16,6 +16,18 @@ case class OutputFolderPath(path: DirectoryPath)
  * with metadata.
  */
 class ImageLoader extends Actor with Stash {
+
+  /**
+   * Default actor behavior.
+   * Accepts an absolute path of one image and stashes all other messages.
+   *
+   * It is here that the actor loads in the image and creates
+   * worker actors and then dispatches them with work (calculating average
+   * brightness of one row of pixels).
+   *
+   * Once it is done doing that it switches to 'acceptingResponses()' behavior
+   * and unstashes all messages.
+   * */
   override def receive: Receive = {
     case AbsoluteImagePath(path) =>
       val image: Image = Image(path)
@@ -33,6 +45,21 @@ class ImageLoader extends Actor with Stash {
     case _ => stash()
   }
 
+  /**
+   * Accepts BrightnessResponse, which essentially is an average brightness
+   * of one row of pixels.
+   * Stashes all the other messages.
+   *
+   * Once it receives enough responses it calculates the average brightness of the image
+   * and passes it on along with the image and the image path to the next behavior 'attachMetadataAndOutput()'.
+   *
+   * @param responses sequence of collected worker actor responses (basically a collection of
+   *                  calculated average row brightness)
+   * @param expectedNumberOfResponses there should be one response per pixel row of the image,
+   *                                  so expectedNumberOfResponses should equal image height
+   * @param imagePath not used in this behavior. Kept around as state for the next behavior.
+   * @param image not used in this behavior. Kept around as state for the next behavior.
+   */
   def acceptingResponses(
     responses: IndexedSeq[Brightness],
     expectedNumberOfResponses: Int,
@@ -51,12 +78,25 @@ class ImageLoader extends Actor with Stash {
     case _ => stash()
   }
 
+  /**
+   * Accepts OutputDirectoryPath.
+   * Normalizes the brightness (to make it in range of 0 to 100), inverts it to
+   * calculate the darkness score of the image and then saves the image with metadata attached
+   * to the output directory sent to it in the message.
+   *
+   * The actor pings its parent about the status of the write to file operation
+   * and then stops itself.
+   *
+   * @param image the image to be saved
+   * @param imagePath the OG path of the image, used get the image filename and format.
+   * @param averageBrightness the average brightness of the image
+   */
   def attachMetadataAndOutput(
     image: Image,
     imagePath: ImagePath,
     averageBrightness: Brightness
   ): Receive = {
-    case OutputFolderPath(outputPath) =>
+    case OutputDirectoryPath(outputPath) =>
       val imageFilenameWithFormat = imagePath
         .split('/')
         .last

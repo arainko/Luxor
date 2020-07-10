@@ -11,7 +11,7 @@ import rainko.luxor.config.Config
 
 import scala.io.Source
 
-case class InputOutputDirectoryPaths(inputPath: String, outputPath: String)
+case class InputOutputDirectoryPaths(inputPath: DirectoryPath, outputPath: DirectoryPath)
 
 /**
  * Supervisor is responsible for initializing and shutting down the system.
@@ -38,7 +38,7 @@ class Supervisor extends Actor with Stash {
       imageLoaders.zip(imagePaths).foreach { loaderToImagePathPair =>
         val (loader, imagePath) = loaderToImagePathPair
         loader ! AbsoluteImagePath(imagePath)
-        loader ! OutputFolderPath(outputPath)
+        loader ! OutputDirectoryPath(outputPath)
       }
       context.become(awaitingShutdown(imageLoaders.size - 1, 0, 0))
       unstashAll()
