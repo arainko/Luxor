@@ -56,14 +56,14 @@ class Supervisor extends Actor with Stash {
         context.become(awaitingShutdown(expectedReturns, successCount + 1, failureCount))
       } else {
         println(s"Done. ${successCount + 1} successful and $failureCount failed.")
-        context.system.terminate
+        context.system.terminate()
       }
     case Status.Failure(ex) => if (successCount + failureCount < expectedReturns) {
       println(s"An error occured: ${ex.getMessage}")
       context.become(awaitingShutdown(expectedReturns, successCount, failureCount + 1))
     } else {
       println(s"Done. $successCount successful and ${failureCount + 1} failed.")
-      context.system.terminate
+      context.system.terminate()
     }
   }
 

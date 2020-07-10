@@ -10,7 +10,7 @@ import scala.io.Source
  */
 object Config {
   private val jsonConfig: String = Source.fromResource("config.json")
-    .getLines
+    .getLines()
     .reduce(_+_)
   private val parsedJsonConfig: JsValue = Json.parse(jsonConfig)
 

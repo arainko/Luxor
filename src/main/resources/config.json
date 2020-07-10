@@ -1,4 +1,4 @@
 {
-  "inputFolderPath": "/home/aleksander/IdeaProjects/Luxor/src/main/resources/in",
-  "outputFolderPath": "/home/aleksander/IdeaProjects/Luxor/src/main/resources/out"
+  "inputFolderPath": "src/main/resources/in",
+  "outputFolderPath": "src/main/resources/out"
 }

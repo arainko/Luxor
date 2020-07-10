@@ -111,7 +111,7 @@ class ImageLoader extends Actor with Stash {
       val normalizedDarkness: Long = (normalizedBrightness - 100) * -1
       val imageFilenameWithMetadata: String = s"${imageFilename}_${brightnessClassification}_$normalizedDarkness"
       Try { image.renderToFile(outputPath, imageFilenameWithMetadata, imageFormat) } match {
-        case Success(_) =>  context.parent ! Status.Success()
+        case Success(result) =>  context.parent ! Status.Success(result)
         case Failure(exception) => context.parent ! Status.Failure(exception)
       }
       context.stop(self)
