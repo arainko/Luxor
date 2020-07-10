@@ -1,15 +1,9 @@
 package rainko.luxor.actors
 
-import java.awt.image.BufferedImage
 import java.io.File
 
-import akka.actor.{Actor, ActorSystem, Props, Stash, Status}
-import javax.imageio.ImageIO
-import play.api.libs.json.Json
-import rainko.luxor.{DirectoryPath, ImagePath}
-import rainko.luxor.config.Config
-
-import scala.io.Source
+import akka.actor.{Actor, Props, Stash, Status}
+import rainko.luxor.DirectoryPath
 
 case class InputOutputDirectoryPaths(inputPath: DirectoryPath, outputPath: DirectoryPath)
 
@@ -17,6 +11,8 @@ case class InputOutputDirectoryPaths(inputPath: DirectoryPath, outputPath: Direc
  * Supervisor is responsible for initializing and shutting down the system.
  */
 class Supervisor extends Actor with Stash {
+  type DirectoryPath = String
+  type ImagePath = String
 
   /**
    * Default actor behavior.
